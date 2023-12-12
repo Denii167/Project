@@ -1,3 +1,4 @@
+// store.js
 import { configureStore } from "@reduxjs/toolkit";
 import {
   persistStore,
@@ -21,7 +22,7 @@ const persistConfig = {
 const persistedReducer = persistReducer(persistConfig, bazarReducer);
 
 export const store = configureStore({
-  reducer: {bazar: persistedReducer},
+  reducer: { bazar: persistedReducer },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {

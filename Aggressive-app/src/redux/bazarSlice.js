@@ -1,3 +1,4 @@
+// bazarSlice.js
 import { createSlice } from "@reduxjs/toolkit";
 import { prodList } from "../Data";
 
@@ -54,12 +55,14 @@ export const bazarSlice = createSlice({
         item.quantity--;
       }
     },
-    // ==== User Start here ====
     addUser: (state, action) => {
       state.userInfo = action.payload;
     },
     removeUser: (state) => {
       state.userInfo = null;
+    },
+    updateUser: (state, action) => {
+      state.userInfo = action.payload;
     },
   },
 });
@@ -72,5 +75,6 @@ export const {
   decrementQuantity,
   addUser,
   removeUser,
+  updateUser,
 } = bazarSlice.actions;
 export default bazarSlice.reducer;

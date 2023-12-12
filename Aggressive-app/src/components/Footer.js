@@ -48,12 +48,14 @@ const Footer = () => {
           <h2 className="text-2x1 font-semibold text-white mb-4">profile</h2>
 
           <div className="flex flex-col gap-2 text-base">
-            <p className="flex items-center gap-3 hover:text-white duration-300 cursor-pointer">
-              <span>
-                <BsPersonFill />
-              </span>
-              my account
-            </p>
+            <Link to="/myAccount">
+              <p className="flex items-center gap-3 hover:text-white duration-300 cursor-pointer">
+                <span>
+                  <BsPersonFill />
+                </span>
+                my account
+              </p>
+            </Link>
             <p className="flex items-center gap-3 hover:text-white duration-300 cursor-pointer">
               <span>
                 <BsPaypal />

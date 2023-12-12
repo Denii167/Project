@@ -1,9 +1,8 @@
-// Import the functions you need from the SDKs you need
+// firebase.js
 import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { getAuth, deleteUser } from "firebase/auth";
+import { getFirestore, doc, setDoc, deleteDoc } from "firebase/firestore";
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAsISR7B_T0WTEqIgmpTw09Go26ltzVOVM",
   authDomain: "aggressapp.firebaseapp.com",
@@ -13,5 +12,33 @@ const firebaseConfig = {
   appId: "1:783302765461:web:ebfc9f010154bab728a49c",
 };
 
-// Initialize Firebase
 export const app = initializeApp(firebaseConfig);
+
+const auth = getAuth();
+const db = getFirestore();
+
+ const saveAddressToFirebase = async (userId, address) => {
+  console.log("Saving address to Firebase");
+  try {
+    const userDocRef = doc(db, "users", userId);
+    await setDoc(userDocRef, { address }, { merge: true });
+    console.log("Address saved to Firebase profile successfully");
+  } catch (error) {
+    console.error("Error saving address to Firebase profile:", error);
+  }
+};
+
+ const deleteUserDataFromFirebase = async (userId) => {
+  try {
+    const userDocRef = doc(db, "users", userId); // Replace 'users' with your Firestore collection name
+    await deleteDoc(userDocRef);
+
+    await deleteUser(auth.currentUser);
+
+    console.log("User data deleted from Firebase successfully");
+  } catch (error) {
+    console.error("Error deleting user data from Firebase:", error);
+  }
+};
+
+export { saveAddressToFirebase, deleteUserDataFromFirebase, auth, db };
