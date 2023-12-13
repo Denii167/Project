@@ -1,7 +1,7 @@
 // firebase.js
 import { initializeApp } from "firebase/app";
-import { getAuth, deleteUser } from "firebase/auth";
-import { getFirestore, doc, setDoc, deleteDoc } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+import { getFirestore, doc, deleteDoc, setDoc } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAsISR7B_T0WTEqIgmpTw09Go26ltzVOVM",
@@ -17,7 +17,7 @@ export const app = initializeApp(firebaseConfig);
 const auth = getAuth();
 const db = getFirestore();
 
- const saveAddressToFirebase = async (userId, address) => {
+const saveAddressToFirebase = async (userId, address) => {
   console.log("Saving address to Firebase");
   try {
     const userDocRef = doc(db, "users", userId);
@@ -28,12 +28,10 @@ const db = getFirestore();
   }
 };
 
- const deleteUserDataFromFirebase = async (userId) => {
+const deleteUserDataFromFirebase = async (userId) => {
   try {
     const userDocRef = doc(db, "users", userId); // Replace 'users' with your Firestore collection name
     await deleteDoc(userDocRef);
-
-    await deleteUser(auth.currentUser);
 
     console.log("User data deleted from Firebase successfully");
   } catch (error) {

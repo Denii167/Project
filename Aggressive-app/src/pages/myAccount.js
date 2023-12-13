@@ -3,10 +3,11 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { updateUser, removeUser } from "../redux/bazarSlice";
 import { getAuth, deleteUser } from "firebase/auth";
-import { updateProfile } from "firebase/auth";
+import { getDoc, doc } from "firebase/firestore";
 import {
   saveAddressToFirebase,
   deleteUserDataFromFirebase,
+  db,
 } from "../FirebaseDb";
 
 const MyAccount = () => {
@@ -28,15 +29,20 @@ const MyAccount = () => {
       try {
         const currentUser = auth.currentUser;
         if (currentUser) {
-          dispatch(
-            updateUser({
-              _id: currentUser.uid,
-              name: currentUser.displayName,
-              email: currentUser.email,
-              image: currentUser.photoURL,
-              address: currentUser.address || {},
-            })
-          );
+          const userDocRef = doc(db, "users", currentUser.uid);
+          const userDocSnapshot = await getDoc(userDocRef);
+
+          const userDocData = userDocSnapshot.data();
+          const updatedUser = {
+            _id: currentUser.uid,
+            name: currentUser.displayName,
+            email: currentUser.email,
+            image: currentUser.photoURL,
+            address: userDocData?.address || {}, // Ensure to fetch address data from Firestore
+          };
+
+          dispatch(updateUser(updatedUser));
+          setAddress(updatedUser.address);
         }
       } catch (error) {
         console.error("Error fetching user details:", error);
@@ -57,19 +63,26 @@ const MyAccount = () => {
   const handleUpdateAddress = async () => {
     try {
       const user = auth.currentUser;
-      await updateProfile(user, {
-        ...user.providerData[0],
-        address: { ...address },
-      });
 
-      dispatch(
-        updateUser({
-          ...user,
-          address: { ...address },
-        })
-      );
+      // Save the address to Firebase
+      await saveAddressToFirebase(user.uid, address);
 
-      saveAddressToFirebase(user.uid, address);
+      // Fetch the updated user details from Firestore
+      const userDocRef = doc(db, "users", user.uid);
+      const userDocSnapshot = await getDoc(userDocRef);
+      const updatedUser = {
+        _id: user.uid,
+        name: user.displayName,
+        email: user.email,
+        image: user.photoURL,
+        address: userDocSnapshot.exists()
+          ? userDocSnapshot.data().address || {}
+          : {},
+      };
+
+      // Update the Redux store with the updated user details
+      dispatch(updateUser(updatedUser));
+
       console.log("Address updated successfully");
     } catch (error) {
       console.error("Error updating address:", error);
@@ -88,9 +101,9 @@ const MyAccount = () => {
   };
 
   return (
-    <div>
-      <h2>My Account</h2>
-      <div className="flex items-center gap-4">
+    <div className="max-w-lg mx-auto mt-8 p-4">
+      <h2 className="text-2xl font-bold mb-4">My Account</h2>
+      <div className="flex items-center gap-4 mb-4">
         <img
           className="w-10 h-10 rounded-full"
           src={user.image}
@@ -98,65 +111,87 @@ const MyAccount = () => {
         />
         <span className="text-lg font-semibold">{user.name}</span>
       </div>
-      <form>
-        {/* labels and inputs for address fields */}
-
-        <label>
-          Country:
+      <form className="space-y-4">
+        <div className="flex flex-col">
+          <label htmlFor="country" className="mb-1 text-sm font-semibold">
+            Country:
+          </label>
           <input
             type="text"
+            id="country"
             name="country"
             value={address.country}
             onChange={handleInputChange}
+            className="border border-gray-300 p-2 rounded"
           />
-        </label>
-        <label>
-          State:
+        </div>
+        <div className="flex flex-col">
+          <label htmlFor="state" className="mb-1 text-sm font-semibold">
+            State:
+          </label>
           <input
             type="text"
+            id="state"
             name="state"
             value={address.state}
             onChange={handleInputChange}
+            className="border border-gray-300 p-2 rounded"
           />
-        </label>
-        <label>
-          City:
+        </div>
+        <div className="flex flex-col">
+          <label htmlFor="city" className="mb-1 text-sm font-semibold">
+            City:
+          </label>
           <input
             type="text"
+            id="city"
             name="city"
             value={address.city}
             onChange={handleInputChange}
+            className="border border-gray-300 p-2 rounded"
           />
-        </label>
-        <label>
-          Street:
+        </div>
+        <div className="flex flex-col">
+          <label htmlFor="street" className="mb-1 text-sm font-semibold">
+            Street:
+          </label>
           <input
             type="text"
+            id="street"
             name="street"
             value={address.street}
             onChange={handleInputChange}
+            className="border border-gray-300 p-2 rounded"
           />
-        </label>
-        <label>
-          Number:
+        </div>
+        <div className="flex flex-col">
+          <label htmlFor="number" className="mb-1 text-sm font-semibold">
+            Number:
+          </label>
           <input
             type="text"
+            id="number"
             name="number"
             value={address.number}
             onChange={handleInputChange}
+            className="border border-gray-300 p-2 rounded"
           />
-        </label>
-        <label>
-          Postcode:
+        </div>
+        <div className="flex flex-col">
+          <label htmlFor="postcode" className="mb-1 text-sm font-semibold">
+            Postcode:
+          </label>
           <input
             type="text"
+            id="postcode"
             name="postcode"
             value={address.postcode}
             onChange={handleInputChange}
+            className="border border-gray-300 p-2 rounded"
           />
-        </label>
+        </div>
         <button
-          className="mt-5 ml-7 flex items-center gap-1 text-gray-400 hover:text-black duration-300 active:text-red-500"
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
           type="button"
           onClick={handleUpdateAddress}
         >
@@ -164,7 +199,7 @@ const MyAccount = () => {
         </button>
       </form>
       <button
-        className="mt-5 ml-7 flex items-center gap-1 text-red-600 hover:text-black duration-300 active:text-red-500"
+        className="mt-5 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
         type="button"
         onClick={handleDeleteAccount}
       >

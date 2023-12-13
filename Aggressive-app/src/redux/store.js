@@ -13,6 +13,8 @@ import {
 import storage from "redux-persist/lib/storage";
 import bazarReducer from "./bazarSlice";
 
+//import { app } from "../FirebaseDb"; // Import app from FirebaseDb
+
 const persistConfig = {
   key: "root",
   version: 1,

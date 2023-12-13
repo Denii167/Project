@@ -62,7 +62,10 @@ export const bazarSlice = createSlice({
       state.userInfo = null;
     },
     updateUser: (state, action) => {
-      state.userInfo = action.payload;
+      return {
+        ...state,
+        userInfo: action.payload,
+      };
     },
   },
 });
