@@ -1,7 +1,7 @@
-// firebase.js
+// FirebaseDb.js
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore, doc, deleteDoc, setDoc } from "firebase/firestore";
+import { getAuth, deleteUser } from "firebase/auth";
+import { getFirestore, doc, setDoc, deleteDoc } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAsISR7B_T0WTEqIgmpTw09Go26ltzVOVM",
@@ -17,7 +17,7 @@ export const app = initializeApp(firebaseConfig);
 const auth = getAuth();
 const db = getFirestore();
 
-const saveAddressToFirebase = async (userId, address) => {
+export const saveAddressToFirebase = async (userId, address) => {
   console.log("Saving address to Firebase");
   try {
     const userDocRef = doc(db, "users", userId);
@@ -28,15 +28,29 @@ const saveAddressToFirebase = async (userId, address) => {
   }
 };
 
-const deleteUserDataFromFirebase = async (userId) => {
-  try {
-    const userDocRef = doc(db, "users", userId); // Replace 'users' with your Firestore collection name
-    await deleteDoc(userDocRef);
+export const useDeleteUserData = () => {
+  const deleteUserDataFromFirebase = async () => {
+    try {
+      const userId = auth.currentUser?.uid;
+      if (userId) {
+        const userDocRef = doc(db, "users", userId);
 
-    console.log("User data deleted from Firebase successfully");
-  } catch (error) {
-    console.error("Error deleting user data from Firebase:", error);
-  }
+        // Delete user data from Firestore
+        await deleteDoc(userDocRef);
+
+        console.log("User data deleted from Firebase");
+
+        // Additional: Remove user ID from auth (optional)
+        await deleteUser(auth.currentUser);
+      } else {
+        console.warn("User ID is undefined or null. User data not deleted.");
+      }
+    } catch (error) {
+      console.error("Error deleting user data from Firebase:", error);
+    }
+  };
+
+  return deleteUserDataFromFirebase;
 };
 
-export { saveAddressToFirebase, deleteUserDataFromFirebase, auth, db };
+export { auth, db, deleteDoc };
